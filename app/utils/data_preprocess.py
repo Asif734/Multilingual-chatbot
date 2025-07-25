@@ -53,7 +53,7 @@ def extract_text_from_pdf(pdf_path: str) -> str:
 
     return cleaned_text
 
-def chunk_text(text: str, chunk_size: int = 1000, chunk_overlap: int = 200) -> list[str]:
+def chunk_text(text: str, chunk_size: int = 2000, chunk_overlap: int = 400) -> list[str]:
     """Splits text into smaller, overlapping chunks."""
     text_splitter = RecursiveCharacterTextSplitter(
         chunk_size=chunk_size,

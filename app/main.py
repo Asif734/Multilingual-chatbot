@@ -91,7 +91,6 @@
 
 
 
-
 from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel, Field
 import uvicorn
@@ -100,82 +99,52 @@ import asyncio
 from typing import List, Dict, Any, Optional
 
 # Import your modules
-from app.services.retriever import initialize_retriever, retrieve_relevant_chunks, rag_vector_store # Import the global instance
+from app.services.retriever import initialize_retriever_from_text, retrieve_relevant_chunks, rag_vector_store
 from app.services.llm_generator import generate_answer_with_context
+from app.models.rag import ChatMessage, ChatResponse, ChatRequest
 
 # --- Configuration ---
-PDF_PATH = r"app\data\HSC26-Bangla1st-Paper.pdf"
+TEXT_PATH = r"C:\Users\Asif\VSCODE\Multilingual_AI_Assistant_RAG\extracted_text_from_HSC26_Bangla1st-Paper.txt"
 RAG_INDEX_PATH = "rag_index"
 
 # Initialize FastAPI app
 app = FastAPI(
     title="Multilingual RAG Chatbot",
-    description="A chatbot that answers questions in multiple languages based on a PDF knowledge base using RAG and LLM, with short-term memory."
+    description="A chatbot that answers questions in multiple languages based on a text knowledge base using RAG and LLM, with short-term memory."
 )
-
-# --- Pydantic Models for Request/Response ---
-class ChatMessage(BaseModel):
-    role: str = Field(..., description="Role of the message sender (e.g., 'user', 'model')")
-    parts: List[Dict[str, str]] = Field(..., description="Content of the message, typically [{'text': '...'}]")
-
-class ChatRequest(BaseModel):
-    question: str = Field(..., description="The user's current question.")
-    chat_history: Optional[List[ChatMessage]] = Field(
-        None,
-        description="Optional: Previous conversation turns. Each turn should be {'role': 'user'/'model', 'parts': [{'text': '...'}]}"
-    )
-
-class ChatResponse(BaseModel):
-    answer: str = Field(..., description="The model's generated answer.")
-    retrieved_context: List[str] = Field(..., description="The document chunks retrieved from the knowledge base.")
 
 # --- Startup Event Handler ---
 @app.on_event("startup")
 async def startup_event():
     """
-    Initializes the RAG retriever when the FastAPI application starts up.
-    This ensures the PDF is processed and the vector store is ready before requests come in.
+    Initializes the RAG retriever when the FastAPI application starts up,
+    using extracted text instead of PDF.
     """
-    print("FastAPI application startup: Initializing RAG components...")
+    print("FastAPI application startup: Initializing RAG from extracted text...")
     try:
-        if os.path.exists(f"{RAG_INDEX_PATH}.faiss"):
-            os.remove(f"{RAG_INDEX_PATH}.faiss")
-            print(f"Removed old FAISS index: {RAG_INDEX_PATH}.faiss")
-        if os.path.exists(f"{RAG_INDEX_PATH}.pkl"):
-            os.remove(f"{RAG_INDEX_PATH}.pkl")
-            print(f"Removed old document pickle: {RAG_INDEX_PATH}.pkl")
+        if not os.path.exists(TEXT_PATH):
+            raise FileNotFoundError(f"Text file not found at {TEXT_PATH}")
 
-        initialize_retriever(pdf_path=PDF_PATH, index_path=RAG_INDEX_PATH)
-        print("RAG components initialized successfully.")
+        initialize_retriever_from_text(text_path=TEXT_PATH, index_path=RAG_INDEX_PATH)
+        print("RAG initialized successfully from text.")
     except Exception as e:
         print(f"Failed to initialize RAG components on startup: {e}")
-        # RE-RAISE THE EXCEPTION TO MAKE STARTUP FAIL LOUDLY
         raise
 
 # --- API Endpoint ---
 @app.post("/chat", response_model=ChatResponse)
 async def chat_with_pdf(request: ChatRequest):
     """
-    Receives a question, retrieves relevant context from the PDF,
+    Receives a question, retrieves relevant context from the knowledge base,
     and generates an answer using the LLM, considering chat history.
     """
-    # Debugging print statement
-    print(f"Type of rag_vector_store: {type(rag_vector_store)}")
-    print(f"Is rag_vector_store None? {rag_vector_store is None}")
-
-    # Ensure rag_vector_store is an instance and built
     if rag_vector_store is None or not rag_vector_store.is_built:
-        if rag_vector_store is None:
-            detail_msg = "RAG system not initialized: rag_vector_store is None."
-        else:
-            detail_msg = "RAG system not initialized: Vector store not built."
-        print(f"Error: {detail_msg}")
-        raise HTTPException(status_code=503, detail=detail_msg)
-    print(f"Messages being sent to Gemini API: {request.question}")
+        msg = "RAG system not initialized properly."
+        print(msg)
+        raise HTTPException(status_code=503, detail=msg)
+
     try:
         relevant_chunks = retrieve_relevant_chunks(request.question, k=3)
-        if not relevant_chunks:
-            print("No relevant chunks found for the query.")
 
         gemini_chat_history = []
         if request.chat_history:
@@ -191,23 +160,19 @@ async def chat_with_pdf(request: ChatRequest):
         return ChatResponse(answer=answer, retrieved_context=relevant_chunks)
 
     except Exception as e:
-        print(f"An error occurred during chat processing: {e}")
+        print(f"Error during chat: {e}")
         raise HTTPException(status_code=500, detail=f"Internal server error: {e}")
 
 # --- Health Check Endpoint ---
 @app.get("/health")
 async def health_check():
-    """
-    Health check endpoint to ensure the API is running and RAG system is initialized.
-    """
     if rag_vector_store is None:
         return {"status": "error", "rag_initialized": False, "message": "rag_vector_store is None"}
     return {"status": "ok", "rag_initialized": rag_vector_store.is_built}
 
-
+# --- Entry Point ---
 if __name__ == "__main__":
-    if not os.path.exists(PDF_PATH):
-        print(f"Error: The PDF file '{PDF_PATH}' was not found. Please place it in the same directory as main.py.")
-        print("Exiting. Cannot start the application without the data source.")
+    if not os.path.exists(TEXT_PATH):
+        print(f"Error: The text file '{TEXT_PATH}' was not found.")
     else:
         uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)

@@ -102,29 +102,51 @@ genai.configure(api_key=GEMINI_API_KEY)
 async def generate_answer_with_context(
     question: str,
     context_chunks: List[str],
-    chat_history: List[Dict[str, Any]] = None # New parameter for chat history
+    chat_history: List[Dict[str, Any]] = None  # Will ignore for now
 ) -> str:
-    """
-    Generates an answer to a question using the LLM, augmented by provided context and chat history.
-    The response will be in the same language as the question.
-    """
-    model = genai.GenerativeModel('gemini-1.5-flash') # Or 'gemini-pro'
+    model = genai.GenerativeModel('gemini-2.5-flash')
 
-    context_text = "\n".join(context_chunks)
+    context_text = "\n".join(context_chunks or [])
 
-    # Prepare messages for the LLM, including history and the current prompt
-    messages = []
+#     rag_prompt = f"""
+#    You are an expert of reading bengali documents.You have be more intelligent, many things might be not in the document directly but you have to make correlation
+#     and find a meaningful answer. You can answer by analysis from the given data sources on the basis of context. Suppose, a user asked
+#    a question like "Who is anupam's uncle?". It is not directly mentioned in the documents but when you read context wise, you will get Shomvunath is the man 
+#    who is uncle of Anupam's. If questions demand one word answer then do not explain.
+#     Answer in the same language as the question.
 
-    # Add previous chat history if available
-    if chat_history:
-        messages.extend(chat_history)
+#     Context:
+#     {context_text}
 
-    # Add the current RAG prompt as the latest user turn
-    # It's important to put the context and question in the user's turn for RAG
+#     Question: {question}
+
+#     Answer:
+#     """
+    
     rag_prompt = f"""
-    You are a helpful assistant. Use the following context to answer the question.
-    If the answer is not available in the context, politely state that you cannot find the answer in the provided information.
-    Answer in the same language as the question.
+    You are an advanced multilingual AI assistant designed to help users understand complex ideas from educational documents. You are given contextual text extracted from an academic paper (e.g., high school Bangla 1st Paper). Your job is to answer user questions based on that context.
+
+🧠 Important:
+- The answer is not directly quoted in the text.
+- You must use **semantic reasoning**, draw **logical inferences**, and identify **relationships or implications** within the content to construct an answer.
+- Use your natural language understanding abilities to bridge gaps where information is implied but not stated.
+
+🌐 Language Rule:
+- If the user asks the question in English, respond in English.
+- If the question is written in Bengali (বাংলা), respond in Bengali.
+- Maintain the tone and clarity expected in academic environments.
+
+📚 Instruction:
+Given the following:
+1. A set of **relevant context chunks** (retrieved using semantic similarity).
+2. A **user question** (which may be in English or Bengali).
+
+You must:
+- Analyze the context thoroughly.
+- Use reasoning and understanding of meaning, not surface-level matching.
+- Provide a well-formed, thoughtful answer in the **same language** as the question.
+
+---
 
     Context:
     {context_text}
@@ -133,46 +155,15 @@ async def generate_answer_with_context(
 
     Answer:
     """
-    messages.append({"role": "user", "parts": [{"text": rag_prompt}]})
+
+    # Ignore chat_history and send only current user message
+    messages = [{"role": "user", "parts": [{"text": rag_prompt}]}]
 
     try:
-        # Use generate_content_async for asynchronous calls
-        # The entire conversation history is passed in 'contents'
         response = await model.generate_content_async(messages)
         return response.text
     except Exception as e:
         print(f"Error generating content from Gemini API: {e}")
         return "Sorry, I am unable to generate an answer at this moment. Please try again later."
 
-if __name__ == "__main_": # Changed to avoid automatic run during import
-    import asyncio
 
-    async def test_llm_with_history():
-        print("Testing LLM with sample context and chat history...")
-        sample_context = [
-            "The capital of France is Paris. Paris is known for its Eiffel Tower.",
-            "Bangladesh gained independence in 1971 after a liberation war."
-        ]
-
-        # Initial turn
-        first_question = "What is the capital of France?"
-        initial_history = []
-        first_answer = await generate_answer_with_context(first_question, sample_context, initial_history)
-        print(f"\nFirst Question: {first_question}\nFirst Answer: {first_answer}")
-
-        # Second turn, building on history
-        # History should include the previous user query and model response
-        updated_history = [
-            {"role": "user", "parts": [{"text": f"Context: {sample_context[0]}\nQuestion: {first_question}"}]},
-            {"role": "model", "parts": [{"text": first_answer}]}
-        ]
-        second_question = "What is it famous for?" # Referring to Paris from previous turn
-        second_answer = await generate_answer_with_context(second_question, sample_context, updated_history)
-        print(f"\nSecond Question: {second_question}\nSecond Answer: {second_answer}")
-
-        # Bengali turn
-        question_bn = "বাংলাদেশের স্বাধীনতা কত সালে হয়েছিল?"
-        answer_bn = await generate_answer_with_context(question_bn, sample_context, [])
-        print(f"\nBengali Question: {question_bn}\nBengali Answer: {answer_bn}")
-
-    asyncio.run(test_llm_with_history())
