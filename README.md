@@ -184,6 +184,12 @@ GeminiAPI - As LLM model
 Scikit-Learn - Evaluation matrcis
 
 
+### Demo
+
+![Demo 1](app/data/ss1.png)
+![Demo 2](app/data/ss2.png)
+
+
 ## Answers of Given questions:
 #### ❓ What method or library did you use to extract the text, and why? Did you face any formatting challenges with the PDF content?
 I used EasyOCR to extract text from the PDF. This decision was made after testing other popular libraries like pdfplumber and PyMuPDF (fitz), which are commonly used for PDF text extraction.
