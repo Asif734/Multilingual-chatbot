@@ -67,26 +67,26 @@ def retrieve_relevant_chunks(query: str, k: int = 3) -> List[str]:
     return relevant_texts
 
 
-# Optional: CLI Test
-if __name__ == "__main__":
-    text_path = r"app/data/extracted_text_from_HSC26_Bangla1st-Paper.txt"
+# # Optional: CLI Test
+# if __name__ == "__main__":
+#     text_path = r"app/data/extracted_text_from_HSC26_Bangla1st-Paper.txt"
 
-    try:
-        initialize_retriever_from_text(text_path)
+#     try:
+#         initialize_retriever_from_text(text_path)
 
-        # Test English query
-        english_query = "What is the main topic of this paper?"
-        retrieved_en = retrieve_relevant_chunks(english_query, k=2)
-        print(f"\n🔍 English Query: {english_query}")
-        for i, chunk in enumerate(retrieved_en):
-            print(f"\n--- Chunk {i+1} ---\n{chunk}\n")
+#         # Test English query
+#         english_query = "What is the main topic of this paper?"
+#         retrieved_en = retrieve_relevant_chunks(english_query, k=2)
+#         print(f"\n🔍 English Query: {english_query}")
+#         for i, chunk in enumerate(retrieved_en):
+#             print(f"\n--- Chunk {i+1} ---\n{chunk}\n")
 
-        # Test Bengali query
-        bengali_query = "এই প্রবন্ধের মূল বিষয় কী?"
-        retrieved_bn = retrieve_relevant_chunks(bengali_query, k=2)
-        print(f"\n🔍 Bengali Query: {bengali_query}")
-        for i, chunk in enumerate(retrieved_bn):
-            print(f"\n--- Chunk {i+1} ---\n{chunk}\n")
+#         # Test Bengali query
+#         bengali_query = "এই প্রবন্ধের মূল বিষয় কী?"
+#         retrieved_bn = retrieve_relevant_chunks(bengali_query, k=2)
+#         print(f"\n🔍 Bengali Query: {bengali_query}")
+#         for i, chunk in enumerate(retrieved_bn):
+#             print(f"\n--- Chunk {i+1} ---\n{chunk}\n")
 
-    except Exception as e:
-        print(f"❌ Retrieval test failed: {e}")
+#     except Exception as e:
+#         print(f"❌ Retrieval test failed: {e}")
