@@ -135,8 +135,8 @@ http://localhost:8000/ask?question= অনুপমের ভাষায় স
 ### 1. 📦 Clone the Repository
 
 ```bash
-git clone https://github.com/your-username/multilingual-rag-system.git
-cd multilingual-rag-system
+git clone https://github.com/Asif734/Multilingual-chatbot
+cd Multilingual-chatbot
 ```
 
 ### 2. Set your .env file 
@@ -198,7 +198,7 @@ However, both pdfplumber and fitz faced significant challenges when processing t
 
 In contrast, EasyOCR—being an optical character recognition (OCR) tool—reads text directly from the rendered image of the page, bypassing encoding issues. It provided more accurate word boundaries and better preserved the semantic structure of Bangla text, which was crucial for downstream semantic retrieval and RAG-based generation.
 
-#### What chunking strategy did you choose (e.g. paragraph-based, sentence-based, character limit)? Why do you think it works well for semantic retrieval?
+#### ❓ What chunking strategy did you choose (e.g. paragraph-based, sentence-based, character limit)? Why do you think it works well for semantic retrieval?
 I chose a character limit-based chunking strategy, where the document is split into chunks of a fixed maximum number of characters.
 
 Why this works well for semantic retrieval:
@@ -211,7 +211,7 @@ Language-agnostic: Unlike sentence-based splitting, which relies on proper sente
 
 Efficient indexing: Fixed-size chunks simplify embedding computation and storage, improving retrieval speed and consistency.
 
-#### What embedding model did you use? Why did you choose it? How does it capture the meaning of the text?
+#### ❓ What embedding model did you use? Why did you choose it? How does it capture the meaning of the text?
 
 I chose this model because it's a lightweight, multilingual sentence embedding model optimized for semantic similarity and retrieval tasks. Here’s why it fits well for your RAG system:
 
@@ -228,7 +228,7 @@ Being based on MiniLM, it’s much smaller and faster than traditional transform
 Others models are there for semantic analysis but they are too big to handle by the system that i am using.
 
 
-#### How are you comparing the query with your stored chunks? Why did you choose this similarity method and storage setup?
+#### ❓ How are you comparing the query with your stored chunks? Why did you choose this similarity method and storage setup?
  compare the user query with stored document chunks by converting both the query and the chunks into dense vector embeddings using the same pre-trained language model. Then, I measure similarity between the query vector and each chunk vector using cosine similarity.
 
 Why cosine similarity?
@@ -246,7 +246,7 @@ The chunk embeddings are stored in a vector database or similarity index (e.g., 
 This enables fast retrieval of the top-k most similar chunks for any given query vector.
 
 
-#### How do you ensure that the question and the document chunks are compared meaningfully? What would happen if the query is vague or missing context?
+#### ❓ How do you ensure that the question and the document chunks are compared meaningfully? What would happen if the query is vague or missing context?
 To ensure the question (query) and document chunks are compared meaningfully:
 
 Use of Contextual Embeddings: Both the query and document chunks are converted into dense vector representations using the same pre-trained language model that captures semantic meaning, not just surface text. This means vectors reflect the underlying concepts, allowing meaningful similarity comparisons beyond exact words.
@@ -257,7 +257,7 @@ Chunk Size and Overlap: By choosing chunk sizes that capture enough context, eac
 
 Similarity Metric: Cosine similarity (or similar measures) captures semantic closeness, helping match even if wording differs.
 
-#### Do the results seem relevant? If not, what might improve them (e.g. better chunking, better embedding model, larger document)?
+#### ❓ Do the results seem relevant? If not, what might improve them (e.g. better chunking, better embedding model, larger document)?
 
 The result seems quite similar. In some cases, it gives wrong output as many question's answer is not directly given at the passage. Semantic result is quite tough for llm.
 
