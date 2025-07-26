@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from typing import List, Dict
+from typing import List, Dict, Optional
 
 class ChatMessage(BaseModel):
     role: str = Field(..., example="user")
@@ -7,7 +7,7 @@ class ChatMessage(BaseModel):
 
 class ChatRequest(BaseModel):
     question: str
-    context_chunks: List[str]
+    context_chunks: Optional[List[str]] = None  # Optional; generated internally
     chat_history: List[ChatMessage] = []
 
 class ChatResponse(BaseModel):

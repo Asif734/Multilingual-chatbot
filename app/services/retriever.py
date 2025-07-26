@@ -1,7 +1,7 @@
 from typing import List
 from app.services.embedding import get_text_embedding
 from app.scripts.vector_store import InMemoryVectorStore
-from app.utils.data_preprocess import chunk_text
+from app.utils.data_preprocess import chunk_text, clean_text
 
 import os
 
@@ -26,7 +26,10 @@ def initialize_retriever_from_text(text_path: str, chunk_size: int = 1000, chunk
             with open(text_path, "r", encoding="utf-8") as file:
                 full_text = file.read()
 
-            chunks = chunk_text(full_text, chunk_size=chunk_size, chunk_overlap=chunk_overlap)
+            # ✅ Clean text before chunking
+            cleaned_text = clean_text(full_text)
+            print(cleaned_text)
+            chunks = chunk_text(cleaned_text, chunk_size=chunk_size, chunk_overlap=chunk_overlap)
             print(f"✅ Generated {len(chunks)} text chunks.")
 
             embeddings = []
@@ -67,26 +70,3 @@ def retrieve_relevant_chunks(query: str, k: int = 3) -> List[str]:
     return relevant_texts
 
 
-# # Optional: CLI Test
-# if __name__ == "__main__":
-#     text_path = r"app/data/extracted_text_from_HSC26_Bangla1st-Paper.txt"
-
-#     try:
-#         initialize_retriever_from_text(text_path)
-
-#         # Test English query
-#         english_query = "What is the main topic of this paper?"
-#         retrieved_en = retrieve_relevant_chunks(english_query, k=2)
-#         print(f"\n🔍 English Query: {english_query}")
-#         for i, chunk in enumerate(retrieved_en):
-#             print(f"\n--- Chunk {i+1} ---\n{chunk}\n")
-
-#         # Test Bengali query
-#         bengali_query = "এই প্রবন্ধের মূল বিষয় কী?"
-#         retrieved_bn = retrieve_relevant_chunks(bengali_query, k=2)
-#         print(f"\n🔍 Bengali Query: {bengali_query}")
-#         for i, chunk in enumerate(retrieved_bn):
-#             print(f"\n--- Chunk {i+1} ---\n{chunk}\n")
-
-#     except Exception as e:
-#         print(f"❌ Retrieval test failed: {e}")

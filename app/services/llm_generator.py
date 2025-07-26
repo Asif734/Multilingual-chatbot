@@ -29,23 +29,11 @@ async def generate_answer_with_context(
 
     context_text = "\n".join(context_chunks or [])
 
-#     rag_prompt = f"""
-#    You are an expert of reading bengali documents.You have be more intelligent, many things might be not in the document directly but you have to make correlation
-#     and find a meaningful answer. You can answer by analysis from the given data sources on the basis of context. Suppose, a user asked
-#    a question like "Who is anupam's uncle?". It is not directly mentioned in the documents but when you read context wise, you will get Shomvunath is the man 
-#    who is uncle of Anupam's. If questions demand one word answer then do not explain.
-#     Answer in the same language as the question.
-
-#     Context:
-#     {context_text}
-
-#     Question: {question}
-
-#     Answer:
-#     """
     
     rag_prompt = f"""
-    You are an advanced multilingual AI assistant designed to help users understand complex ideas from educational documents. You are given contextual text extracted from an academic paper (e.g., high school Bangla 1st Paper). Your job is to answer user questions based on that context.
+    You are an advanced multilingual AI assistant designed to help users understand complex ideas from educational documents.
+      You are given contextual text extracted from an academic paper (e.g., high school Bangla 1st Paper). 
+      Your job is to answer user questions based on that context and by analysing the whole chunk.
 
 🧠 Important:
 - The answer is not directly quoted in the text.
@@ -65,7 +53,7 @@ Given the following:
 You must:
 - Analyze the context thoroughly.
 - Use reasoning and understanding of meaning, not surface-level matching.
-- Provide a well-formed, thoughtful answer in the **same language** as the question.
+- Provide a well-formed, thoughtful, focused answer, most preferable one or two word answer in the **same language** as the question.
 
 ---
 
