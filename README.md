@@ -100,7 +100,7 @@ Then query:
 http://localhost:8000/ask?question= অনুপমের ভাষায় সুপুরুষ কাকে বলা হয়েছে?
 
 ## 📦 Project Structure
-
+``` bash
 .
 ├── data/
 │   ├── HSC26-Bangla1st-Paper.pdf
@@ -126,7 +126,7 @@ http://localhost:8000/ask?question= অনুপমের ভাষায় স
 └── requirements.txt
 
 
-
+```
 
 
 
